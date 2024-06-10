@@ -1,0 +1,54 @@
+---
+title: "Abudance"
+author: "Paolo Federico"
+date: "`r Sys.Date()`"
+output: html_document
+---
+```{r}
+library(tidyverse)
+library(tibble)
+library(dplyr)
+```
+```{r}
+
+data <- data.frame(Sample=c("X1", "X2", "X3"),
+                   gene1=c(79, 12, 8), 
+                   gene2=c(31, 56, 11), 
+                   gene3=c(18, 72, 9), 
+                   gene4=c(49, 15, 35), 
+                   gene5=c(29, 52, 18))
+data <- as_tibble(data)
+```
+
+```{r}
+closure <- data %>% 
+  select(starts_with("gene")) %>% 
+  compositions::clo(tot=1)
+```
+```{r}
+data <- data %>% 
+  mutate(tot_fragmets=rowSums(data %>% 
+                                select(starts_with("gene"))))
+gene_length = 300
+```
+```{r}
+FPKM <- data %>% 
+  select(starts_with("gene"))
+
+for (gene in 1:ncol(FPKM)){
+  for (r in 1:nrow(FPKM)){
+    FPKM[r, gene] = FPKM[r, gene] * 10**9 / (gene_length * data[r, "tot_fragmets"])
+  }
+}
+```
+```{r}
+logFPKM <- log(FPKM)
+```
+```{r}
+CLR <- compositions::clr(logFPKM)
+CLR <- as_tibble(compositions::clrInv(CLR))
+```
+
+
+
+
